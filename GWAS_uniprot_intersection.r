@@ -5,7 +5,7 @@ library(rtracklayer)
 uniprot_dir = '/home/shann/Documents/database/uniprot/'
 gwas_dir = '/home/shann/Documents/GWAS_sumstats/AD/'
 out_dir = '/home/shann/Documents/AD_GWAS_PPI_project/'
-chain_file = '/home/shann/Documents/R_package/rtracklayer/liftover_chain/hg19ToHg38.over.chain'
+chain_file = '/home/shann/Documents/references/liftover_chain/hg19ToHg38.over.chain'
 chain = import.chain(chain_file)
 
 uniprot_var_df = read.table(file = paste0(uniprot_dir,'homo_sapiens_variation.txt.gz'), skip = 161, header = T, sep = '\t')
@@ -50,3 +50,32 @@ jansen_df$CHR = paste0('chr',jansen_df$CHR)
 jansen_df$pos = with(jansen_df,ifelse(A1=='I' | A1=='D',BP+1, BP))
 #convert gwas df to GRanges object
 jansen_gr = with(jansen_df,GRanges(CHR,IRanges(pos,pos,SNP=SNP,A1=A1,A2=A2,P=P,OR=OR)))
+jansen_uniprot_overlap_hit = findOverlaps(jansen_gr,uniprot_var_gr,type = 'equal')
+jansen_uniprot_overlap_hit_df = as.data.frame(jansen_uniprot_overlap_hit)
+jansen_overlap_part = jansen_df[jansen_uniprot_overlap_hit_df$queryHits,]
+colnames(jansen_overlap_part) = paste0('gwas.',colnames(jansen_overlap_part))
+uniprot_overlap_part = uniprot_var_df[jansen_uniprot_overlap_hit_df$subjectHits,]
+colnames(uniprot_overlap_part) = paste0('uniprot.',colnames(uniprot_overlap_part))
+jansen_uniprot_overlap_df = cbind(jansen_overlap_part,uniprot_overlap_part)
+jansen_uniprot_overlap_df = jansen_uniprot_overlap_df[order(jansen_uniprot_overlap_df$gwas.P),]
+write.csv(jansen_uniprot_overlap_df,file = paste0(out_dir,'jansen_uniprot_overlap_df.csv'))
+jansen_uniprot_overlap_sugThre_df = jansen_uniprot_overlap_df[jansen_uniprot_overlap_df$gwas.P < 1e-5,]
+write.csv(jansen_uniprot_overlap_sugThre_df,file = paste0(out_dir,'jansen_uniprot_overlap_sugThre_df.csv'))
+
+#kunkle gwas
+kunkle_df = read.table(file = paste0(gwas_dir,'AD_Kunkle_GWAS.assoc'), header = T, sep = ' ')
+kunkle_df$CHR = paste0('chr',kunkle_df$CHR)
+#kunkle_df$pos = with(kunkle_df,ifelse(A1=='I' | A1=='D',BP+1, BP))
+#convert gwas df to GRanges object
+kunkle_gr = with(kunkle_df,GRanges(CHR,IRanges(BP,BP,SNP=SNP,A1=A1,A2=A2,P=P,OR=OR)))
+kunkle_uniprot_overlap_hit = findOverlaps(kunkle_gr,uniprot_var_gr,type = 'equal')
+kunkle_uniprot_overlap_hit_df = as.data.frame(kunkle_uniprot_overlap_hit)
+kunkle_overlap_part = kunkle_df[kunkle_uniprot_overlap_hit_df$queryHits,]
+colnames(kunkle_overlap_part) = paste0('gwas.',colnames(kunkle_overlap_part))
+uniprot_overlap_part = uniprot_var_df[kunkle_uniprot_overlap_hit_df$subjectHits,]
+colnames(uniprot_overlap_part) = paste0('uniprot.',colnames(uniprot_overlap_part))
+kunkle_uniprot_overlap_df = cbind(kunkle_overlap_part,uniprot_overlap_part)
+kunkle_uniprot_overlap_df = kunkle_uniprot_overlap_df[order(kunkle_uniprot_overlap_df$gwas.P),]
+write.csv(kunkle_uniprot_overlap_df,file = paste0(out_dir,'kunkle_uniprot_overlap_df.csv'))
+kunkle_uniprot_overlap_sugThre_df = kunkle_uniprot_overlap_df[kunkle_uniprot_overlap_df$gwas.P < 1e-5,]
+write.csv(kunkle_uniprot_overlap_sugThre_df,file = paste0(out_dir,'kunkle_uniprot_overlap_sugThre_df.csv'))
