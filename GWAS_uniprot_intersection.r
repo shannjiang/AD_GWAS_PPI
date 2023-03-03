@@ -61,6 +61,10 @@ jansen_uniprot_overlap_df = jansen_uniprot_overlap_df[order(jansen_uniprot_overl
 write.csv(jansen_uniprot_overlap_df,file = paste0(out_dir,'jansen_uniprot_overlap_df.csv'))
 jansen_uniprot_overlap_sugThre_df = jansen_uniprot_overlap_df[jansen_uniprot_overlap_df$gwas.P < 1e-5,]
 write.csv(jansen_uniprot_overlap_sugThre_df,file = paste0(out_dir,'jansen_uniprot_overlap_sugThre_df.csv'))
+jansen_uniprot_overlap_nomThre_df = jansen_uniprot_overlap_df[jansen_uniprot_overlap_df$gwas.P < 5e-2,]
+write.csv(jansen_uniprot_overlap_nomThre_df,file = paste0(out_dir,'jansen_uniprot_overlap_nomThre_df.csv'))
+#remove jansen related files to save memory
+rm(list = ls(pattern = 'jansen'))
 
 #kunkle gwas
 kunkle_df = read.table(file = paste0(gwas_dir,'AD_Kunkle_GWAS.assoc'), header = T, sep = ' ')
@@ -79,3 +83,8 @@ kunkle_uniprot_overlap_df = kunkle_uniprot_overlap_df[order(kunkle_uniprot_overl
 write.csv(kunkle_uniprot_overlap_df,file = paste0(out_dir,'kunkle_uniprot_overlap_df.csv'))
 kunkle_uniprot_overlap_sugThre_df = kunkle_uniprot_overlap_df[kunkle_uniprot_overlap_df$gwas.P < 1e-5,]
 write.csv(kunkle_uniprot_overlap_sugThre_df,file = paste0(out_dir,'kunkle_uniprot_overlap_sugThre_df.csv'))
+kunkle_uniprot_overlap_nomThre_df = kunkle_uniprot_overlap_df[kunkle_uniprot_overlap_df$gwas.P < 5e-2,]
+write.csv(kunkle_uniprot_overlap_nomThre_df,file = paste0(out_dir,'kunkle_uniprot_overlap_nomThre_df.csv'))
+
+#Bellenguez
+bell_df = read.table(file = paste0(gwas_dir,'Bellenguez_GCST90027158_buildGRCh38.tsv.gz'), header = T, sep = '\t')
