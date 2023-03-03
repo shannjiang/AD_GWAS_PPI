@@ -87,4 +87,42 @@ kunkle_uniprot_overlap_nomThre_df = kunkle_uniprot_overlap_df[kunkle_uniprot_ove
 write.csv(kunkle_uniprot_overlap_nomThre_df,file = paste0(out_dir,'kunkle_uniprot_overlap_nomThre_df.csv'))
 
 #Bellenguez
+#bell_df = read.table(file = paste0(gwas_dir,'Bellenguez_GCST90027158_buildGRCh38_top10000.tsv.gz'), header = T, sep = '\t')
 bell_df = read.table(file = paste0(gwas_dir,'Bellenguez_GCST90027158_buildGRCh38.tsv.gz'), header = T, sep = '\t')
+bell_df$chromosome = paste0('chr',bell_df$chromosome)
+bell_gr = with(bell_df,GRanges(chromosome,IRanges(base_pair_location,base_pair_location,SNP=variant_id,A1=other_allele,A2=effect_allele,P=p_value,OR=odds_ratio)))
+bell_uniprot_overlap_hit = findOverlaps(bell_gr,uniprot_var_gr,type = 'equal')
+bell_uniprot_overlap_hit_df = as.data.frame(bell_uniprot_overlap_hit)
+bell_overlap_part = bell_df[bell_uniprot_overlap_hit_df$queryHits,]
+colnames(bell_overlap_part) = paste0('gwas.',colnames(bell_overlap_part))
+uniprot_overlap_part = uniprot_var_df[bell_uniprot_overlap_hit_df$subjectHits,]
+colnames(uniprot_overlap_part) = paste0('uniprot.',colnames(uniprot_overlap_part))
+bell_uniprot_overlap_df = cbind(bell_overlap_part,uniprot_overlap_part)
+bell_uniprot_overlap_df = bell_uniprot_overlap_df[order(bell_uniprot_overlap_df$gwas.p_value),]
+write.csv(bell_uniprot_overlap_df,file = paste0(out_dir,'bell_uniprot_overlap_df.csv'))
+bell_uniprot_overlap_sugThre_df = bell_uniprot_overlap_df[bell_uniprot_overlap_df$gwas.P_value < 1e-5,]
+write.csv(bell_uniprot_overlap_sugThre_df,file = paste0(out_dir,'bell_uniprot_overlap_sugThre_df.csv'))
+bell_uniprot_overlap_nomThre_df = bell_uniprot_overlap_df[bell_uniprot_overlap_df$gwas.p_value < 5e-2,]
+write.csv(bell_uniprot_overlap_nomThre_df,file = paste0(out_dir,'bell_uniprot_overlap_nomThre_df.csv'))
+
+#wightman
+wightman_df = read.table(file = paste0(gwas_dir,'Wightman_PGCALZ2sumstatsExcluding23andMe.txt.gz'), header = T, sep = '\t')
+wightman_df$chr = paste0('chr',wightman_df$chr)
+wightman_df$SNP = with(wightman_df,paste0(chr,'_',PosGRCh37,'_',otherAllele,'_',testedAllele))
+wightman_gr = with(wightman_df,GRanges(chr,IRanges(PosGRCh37,PosGRCh37,SNP=SNP,A1=otherAllele,A2=testedAllele,P=p)))
+#bim_hg38 = as.data.frame(liftOver(bim_gr,chain))
+wightman_hg38_gr = liftOver(wightman_gr,chain)
+wightman_hg38_gr = unlist(wightman_hg38_gr)
+wightman_uniprot_overlap_hit = findOverlaps(wightman_gr,uniprot_var_gr,type = 'equal')
+wightman_uniprot_overlap_hit_df = as.data.frame(wightman_uniprot_overlap_hit)
+wightman_overlap_part = wightman_df[wightman_uniprot_overlap_hit_df$queryHits,]
+colnames(wightman_overlap_part) = paste0('gwas.',colnames(wightman_overlap_part))
+uniprot_overlap_part = uniprot_var_df[wightman_uniprot_overlap_hit_df$subjectHits,]
+colnames(uniprot_overlap_part) = paste0('uniprot.',colnames(uniprot_overlap_part))
+wightman_uniprot_overlap_df = cbind(wightman_overlap_part,uniprot_overlap_part)
+wightman_uniprot_overlap_df = wightman_uniprot_overlap_df[order(wightman_uniprot_overlap_df$gwas.p),]
+write.csv(wightman_uniprot_overlap_df,file = paste0(out_dir,'wightman_uniprot_overlap_df.csv'))
+wightman_uniprot_overlap_sugThre_df = wightman_uniprot_overlap_df[wightman_uniprot_overlap_df$gwas.p < 1e-5,]
+write.csv(wightman_uniprot_overlap_sugThre_df,file = paste0(out_dir,'wightman_uniprot_overlap_sugThre_df.csv'))
+wightman_uniprot_overlap_nomThre_df = wightman_uniprot_overlap_df[wightman_uniprot_overlap_df$gwas.p < 5e-2,]
+write.csv(wightman_uniprot_overlap_nomThre_df,file = paste0(out_dir,'wightman_uniprot_overlap_nomThre_df.csv'))
